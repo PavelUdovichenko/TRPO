@@ -63,7 +63,6 @@ def get_url():
     else:
             exit(0)
 url = get_url()
-# print(url)
 response = requests.get(url)
 content = json.loads(response.text)
 # ti=-3
