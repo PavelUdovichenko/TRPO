@@ -2,36 +2,42 @@ import geturlcontent
 import requests
 from Google import Create_Service, convert_to_RFC_datetime
 import json
+import schedule
 import time
+
 
 
 def main():
     url = geturlcontent.get_url()
+    #print(url)
     service, c_id = create_calendar()
     # list = list_calendars(service)
     create_event(url, c_id, service)
-    # list_events(service, c_id)
     rday = get_refresh()
     if rday == 'Monday':
-        schedule.every().monday.do(create_event(url, c_id, service))
+        schedule.every().monday.do(main)
     elif rday == 'Tuesday':
-        schedule.every().tuesday.do(create_event(url, c_id, service))
+        schedule.every().tuesday.do(main)
     elif rday == 'Wednesday':
-        schedule.every().wednesday.do(create_event(url, c_id, service))
+        schedule.every().wednesday.do(main)
     elif rday == 'Thursday':
-        schedule.every().thursday.do(create_event(url, c_id, service))
+        schedule.every().thursday.do(main)
     elif rday == 'Friday':
-        schedule.every().friday.do(create_event(url, c_id, service))
+        schedule.every().friday.do(main)
     elif rday == 'Saturday':
-        schedule.every().saturday.do(create_event(url, c_id, service))
+        schedule.every().saturday.do(main)
     elif rday == 'Sunday':
-        schedule.every().sunday.do(create_event(url, c_id, service))
+        schedule.every().sunday.do(main)
+
+    # list_events(service, c_id)
 
 
-def get_refresh():
+def get_refresh(day='Sunday'):
     answers = geturlcontent.get_answers()
     day = answers[6]
     return day
+
+
 
 def list_events(service, c_id):
     list_events = []
@@ -149,6 +155,19 @@ def create_event(url, c_id, service):
     ntf = answers[5]
     add_discription = answers[7]
     calendar_trpo_id = c_id
+    page_token = None
+    eid_list = []
+    while True:
+        events = service.events().list(calendarId=calendar_trpo_id, pageToken=page_token).execute()
+        for event in events['items']:
+            # print("событие" + event['summary'])
+            event_id = event['id']
+            eid_list.append(event_id)
+        page_token = events.get('nextPageToken')
+        if not page_token:
+            break
+    for e in range(len(eid_list)):
+        service.events().delete(calendarId=calendar_trpo_id, eventId = eid_list[e]).execute()
     """Create an event"""
     # url_response = requests.get(url)
     # content = json.loads(url_response.text)
@@ -231,7 +250,7 @@ def create_event(url, c_id, service):
                     }
 
                     maxAttendees = 5
-                    sendNotification =  ntf
+                    sendNotification = ntf
                     sendUpdate = 'none'
                     supportsAttachments = True
 
