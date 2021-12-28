@@ -7,12 +7,31 @@ import time
 
 def main():
     url = geturlcontent.get_url()
-    #print(url)
     service, c_id = create_calendar()
     # list = list_calendars(service)
     create_event(url, c_id, service)
     # list_events(service, c_id)
+    rday = get_refresh()
+    if rday == 'Monday':
+        schedule.every().monday.do(create_event(url, c_id, service))
+    elif rday == 'Tuesday':
+        schedule.every().tuesday.do(create_event(url, c_id, service))
+    elif rday == 'Wednesday':
+        schedule.every().wednesday.do(create_event(url, c_id, service))
+    elif rday == 'Thursday':
+        schedule.every().thursday.do(create_event(url, c_id, service))
+    elif rday == 'Friday':
+        schedule.every().friday.do(create_event(url, c_id, service))
+    elif rday == 'Saturday':
+        schedule.every().saturday.do(create_event(url, c_id, service))
+    elif rday == 'Sunday':
+        schedule.every().sunday.do(create_event(url, c_id, service))
 
+
+def get_refresh():
+    answers = geturlcontent.get_answers()
+    day = answers[6]
+    return day
 
 def list_events(service, c_id):
     list_events = []
@@ -126,7 +145,9 @@ def list_calendars(service):
 
 
 def create_event(url, c_id, service):
-
+    answers = geturlcontent.get_answers()
+    ntf = answers[5]
+    add_discription = answers[7]
     calendar_trpo_id = c_id
     """Create an event"""
     # url_response = requests.get(url)
@@ -169,7 +190,7 @@ def create_event(url, c_id, service):
                     'StartTime': ftimes,
                     'EndTime': ftimee,
                     'summary': subject,
-                    'description': Type + group_num + teacher_name + " URL:" + lms_url,
+                    'description': Type + "\n" + group_num + "\n" + teacher_name + " URL:" + lms_url + "\nКомментарий: " + add_discription,
                     'location': auditories,
                 }
                 # print("сейчас делаем: " + str(result))
@@ -192,7 +213,7 @@ def create_event(url, c_id, service):
                             'timeZone': 'Europe/Moscow'
                         },
                         'summary': subject,
-                        'description': Type + group_num + teacher_name + " URL:" + lms_url,
+                        'description': Type + "\n" + group_num + "\n" + teacher_name + " URL:" + lms_url + "\nКомментарий: " + add_discription,
                         'colorId': 5,
                         'status': 'confirmed',
                         'transparency': 'opaque',
@@ -210,7 +231,7 @@ def create_event(url, c_id, service):
                     }
 
                     maxAttendees = 5
-                    sendNotification = True
+                    sendNotification =  ntf
                     sendUpdate = 'none'
                     supportsAttachments = True
 
